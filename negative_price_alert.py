@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Sendet eine Telegram-Nachricht, wenn der Day-Ahead-Strompreis am naechsten Tag negativ ist."""
+"""Sendet eine WhatsApp-Nachricht, wenn der Day-Ahead-Strompreis am naechsten Tag negativ ist."""
 
 import os
 import sys
@@ -8,11 +8,11 @@ from datetime import datetime, timedelta, timezone
 import requests
 
 ENERGY_CHARTS_URL = "https://api.energy-charts.info/price"
-TELEGRAM_API_URL = "https://api.telegram.org/bot{token}/sendMessage"
+CALLMEBOT_API_URL = "https://api.callmebot.com/whatsapp.php"
 
 BIDDING_ZONE = os.environ.get("BIDDING_ZONE", "DE-LU")
-TELEGRAM_BOT_TOKEN = os.environ.get("TELEGRAM_BOT_TOKEN")
-TELEGRAM_CHAT_ID = os.environ.get("TELEGRAM_CHAT_ID")
+WHATSAPP_PHONE = os.environ.get("WHATSAPP_PHONE")
+CALLMEBOT_API_KEY = os.environ.get("CALLMEBOT_API_KEY")
 
 # Day-Ahead-Preise werden in dieser Zone veroeffentlicht; fuer die Anzeige
 # rechnen wir die UTC-Zeitstempel der API in CET/CEST um.
@@ -73,14 +73,19 @@ def build_message(date_str: str, periods: list[tuple[datetime, datetime]]) -> st
     return "\n".join(lines)
 
 
-def send_telegram_message(text: str) -> None:
-    if not TELEGRAM_BOT_TOKEN or not TELEGRAM_CHAT_ID:
+def send_whatsapp_message(text: str) -> None:
+    if not WHATSAPP_PHONE or not CALLMEBOT_API_KEY:
         raise RuntimeError(
-            "TELEGRAM_BOT_TOKEN und TELEGRAM_CHAT_ID muessen gesetzt sein."
+            "WHATSAPP_PHONE und CALLMEBOT_API_KEY muessen gesetzt sein."
         )
-    url = TELEGRAM_API_URL.format(token=TELEGRAM_BOT_TOKEN)
-    response = requests.post(
-        url, data={"chat_id": TELEGRAM_CHAT_ID, "text": text}, timeout=30
+    response = requests.get(
+        CALLMEBOT_API_URL,
+        params={
+            "phone": WHATSAPP_PHONE,
+            "text": text,
+            "apikey": CALLMEBOT_API_KEY,
+        },
+        timeout=30,
     )
     response.raise_for_status()
 
@@ -98,7 +103,7 @@ def main() -> int:
 
     message = build_message(date_str, periods)
     print(message)
-    send_telegram_message(message)
+    send_whatsapp_message(message)
     return 0
 
 

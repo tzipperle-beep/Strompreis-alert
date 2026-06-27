@@ -1,31 +1,34 @@
 # Strompreis-Alert
 
-Schickt täglich eine Telegram-Nachricht, falls der Day-Ahead-Strompreis am
+Schickt täglich eine WhatsApp-Nachricht, falls der Day-Ahead-Strompreis am
 **nächsten Tag** zeitweise negativ ist – inkl. Zeitraum (von/bis).
 
 Datenquelle: [energy-charts.info Day-Ahead-Price-API](https://api.energy-charts.info/#/prices/day_ahead_price_price_get)
 (Standard-Preiszone: `DE-LU`).
 
+Versand erfolgt über [CallMeBot](https://www.callmebot.com/blog/free-api-whatsapp-messages/),
+einen kostenlosen Drittanbieter-Dienst für WhatsApp-Nachrichten an die eigene
+Nummer.
+
 ## Einmaliges Setup
 
-1. **Telegram-Bot erstellen**
-   - Mit [@BotFather](https://t.me/BotFather) chatten, `/newbot` ausführen,
-     den angezeigten **Bot-Token** notieren.
-   - Dem eigenen Bot eine Nachricht schreiben (z. B. `/start`), damit er dich
-     kennt.
-   - Eigene **Chat-ID** ermitteln, z. B. über:
-     `https://api.telegram.org/bot<TOKEN>/getUpdates`
-     (im JSON unter `message.chat.id`).
+1. **CallMeBot aktivieren**
+   - Die Nummer `+34 644 51 73 49` zu deinen WhatsApp-Kontakten hinzufügen.
+   - Dieser Nummer per WhatsApp die Nachricht `I allow callmebot to send me messages`
+     schicken.
+   - Du bekommst per WhatsApp deinen persönlichen **API-Key** zurück
+     (z. B. `123456`).
 
 2. **GitHub Repo Secrets/Variablen anlegen** (Settings → Secrets and variables → Actions)
-   - Secret `TELEGRAM_BOT_TOKEN` = dein Bot-Token
-   - Secret `TELEGRAM_CHAT_ID` = deine Chat-ID
+   - Secret `WHATSAPP_PHONE` = deine Telefonnummer im internationalen Format
+     mit `+`, z. B. `+491701234567`
+   - Secret `CALLMEBOT_API_KEY` = dein CallMeBot-API-Key
    - Optional Variable `BIDDING_ZONE` (Standard: `DE-LU`, z. B. `AT`, `CH`)
 
 3. Fertig. Der Workflow [`negative-price-alert.yml`](.github/workflows/negative-price-alert.yml)
    läuft automatisch täglich um 13:00 UTC (nachdem die Day-Ahead-Auktion
    veröffentlicht ist) und prüft die Preise für den nächsten Tag. Gibt es
-   negative Preisperioden, kommt eine Telegram-Nachricht wie:
+   negative Preisperioden, kommt eine WhatsApp-Nachricht wie:
 
    ```
    ⚡ Negative Strompreise am 2026-06-28 (DE-LU):
@@ -38,13 +41,20 @@ Datenquelle: [energy-charts.info Day-Ahead-Price-API](https://api.energy-charts.
 
 ## Manuell testen
 
-Workflow manuell über den Tab "Actions" → "Negative Strompreis Alert" →
+Workflow manuell über den Tab "Actions" → "Negativer Strompreis WhatsApp-Alert" →
 "Run workflow" anstoßen, oder lokal:
 
 ```bash
 pip install -r requirements.txt
-export TELEGRAM_BOT_TOKEN=xxxx
-export TELEGRAM_CHAT_ID=xxxx
+export WHATSAPP_PHONE=+491701234567
+export CALLMEBOT_API_KEY=xxxx
 export BIDDING_ZONE=DE-LU   # optional
 python negative_price_alert.py
 ```
+
+## Hinweis zu CallMeBot
+
+CallMeBot ist ein inoffizieller, kostenloser Dienst für persönliche
+Benachrichtigungen (kein offizielles WhatsApp-Business-API). Für gelegentliche
+Alerts wie diesen ist er ausreichend zuverlässig, für unternehmenskritische
+oder massenhafte Nachrichten ist er nicht gedacht.

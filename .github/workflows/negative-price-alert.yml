@@ -1,4 +1,4 @@
-name: Negative Strompreis Alert
+name: Negativer Strompreis WhatsApp-Alert
 
 on:
   schedule:
@@ -21,7 +21,7 @@ jobs:
 
       - name: Check tomorrow's day-ahead price
         env:
-          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
-          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+          WHATSAPP_PHONE: ${{ secrets.WHATSAPP_PHONE }}
+          CALLMEBOT_API_KEY: ${{ secrets.CALLMEBOT_API_KEY }}
           BIDDING_ZONE: ${{ vars.BIDDING_ZONE }}
         run: python negative_price_alert.py
