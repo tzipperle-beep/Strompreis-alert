@@ -1,4 +1,4 @@
-name: Negativer Strompreis WhatsApp-Alert
+name: Negativer Strompreis E-Mail-Alert
 
 on:
   schedule:
@@ -21,7 +21,10 @@ jobs:
 
       - name: Check tomorrow's day-ahead price
         env:
-          WHATSAPP_PHONE: ${{ secrets.WHATSAPP_PHONE }}
-          CALLMEBOT_API_KEY: ${{ secrets.CALLMEBOT_API_KEY }}
+          SMTP_HOST: ${{ vars.SMTP_HOST }}
+          SMTP_PORT: ${{ vars.SMTP_PORT }}
+          SMTP_USER: ${{ secrets.SMTP_USER }}
+          SMTP_PASSWORD: ${{ secrets.SMTP_PASSWORD }}
+          EMAIL_TO: ${{ secrets.EMAIL_TO }}
           BIDDING_ZONE: ${{ vars.BIDDING_ZONE }}
         run: python negative_price_alert.py

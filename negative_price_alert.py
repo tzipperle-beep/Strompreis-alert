@@ -1,18 +1,22 @@
 #!/usr/bin/env python3
-"""Sendet eine WhatsApp-Nachricht, wenn der Day-Ahead-Strompreis am naechsten Tag negativ ist."""
+"""Sendet eine E-Mail, wenn der Day-Ahead-Strompreis am naechsten Tag negativ ist."""
 
 import os
+import smtplib
 import sys
 from datetime import datetime, timedelta, timezone
+from email.mime.text import MIMEText
 
 import requests
 
 ENERGY_CHARTS_URL = "https://api.energy-charts.info/price"
-CALLMEBOT_API_URL = "https://api.callmebot.com/whatsapp.php"
 
 BIDDING_ZONE = os.environ.get("BIDDING_ZONE", "DE-LU")
-WHATSAPP_PHONE = os.environ.get("WHATSAPP_PHONE")
-CALLMEBOT_API_KEY = os.environ.get("CALLMEBOT_API_KEY")
+SMTP_HOST = os.environ.get("SMTP_HOST", "smtp.gmail.com")
+SMTP_PORT = int(os.environ.get("SMTP_PORT", "465"))
+SMTP_USER = os.environ.get("SMTP_USER")
+SMTP_PASSWORD = os.environ.get("SMTP_PASSWORD")
+EMAIL_TO = os.environ.get("EMAIL_TO")
 
 # Day-Ahead-Preise werden in dieser Zone veroeffentlicht; fuer die Anzeige
 # rechnen wir die UTC-Zeitstempel der API in CET/CEST um.
@@ -73,21 +77,18 @@ def build_message(date_str: str, periods: list[tuple[datetime, datetime]]) -> st
     return "\n".join(lines)
 
 
-def send_whatsapp_message(text: str) -> None:
-    if not WHATSAPP_PHONE or not CALLMEBOT_API_KEY:
-        raise RuntimeError(
-            "WHATSAPP_PHONE und CALLMEBOT_API_KEY muessen gesetzt sein."
-        )
-    response = requests.get(
-        CALLMEBOT_API_URL,
-        params={
-            "phone": WHATSAPP_PHONE,
-            "text": text,
-            "apikey": CALLMEBOT_API_KEY,
-        },
-        timeout=30,
-    )
-    response.raise_for_status()
+def send_email(subject: str, body: str) -> None:
+    if not SMTP_USER or not SMTP_PASSWORD or not EMAIL_TO:
+        raise RuntimeError("SMTP_USER, SMTP_PASSWORD und EMAIL_TO muessen gesetzt sein.")
+
+    message = MIMEText(body, "plain", "utf-8")
+    message["Subject"] = subject
+    message["From"] = SMTP_USER
+    message["To"] = EMAIL_TO
+
+    with smtplib.SMTP_SSL(SMTP_HOST, SMTP_PORT) as server:
+        server.login(SMTP_USER, SMTP_PASSWORD)
+        server.sendmail(SMTP_USER, [EMAIL_TO], message.as_string())
 
 
 def main() -> int:
@@ -103,7 +104,7 @@ def main() -> int:
 
     message = build_message(date_str, periods)
     print(message)
-    send_whatsapp_message(message)
+    send_email(f"Negative Strompreise am {date_str}", message)
     return 0
 
 
