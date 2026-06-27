@@ -2,8 +2,10 @@ name: Negativer Strompreis E-Mail-Alert
 
 on:
   schedule:
-    # 13:00 UTC = 14:00/15:00 MEZ/MESZ, nach Veroeffentlichung der Day-Ahead-Preise
-    - cron: "0 13 * * *"
+    # 11:00 und 17:00 UTC = 13:00 und 19:00 Uhr MESZ (Sommerzeit).
+    # GitHub-Cron rechnet immer in UTC, daher verschiebt es sich im Winter (MEZ)
+    # auf 12:00 und 18:00 Uhr lokale Zeit.
+    - cron: "0 11,17 * * *"
   workflow_dispatch: {}
 
 jobs:

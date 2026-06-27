@@ -25,9 +25,9 @@ Versand erfolgt per SMTP (Standard: Gmail).
      (Standard: `smtp.gmail.com` / `465`)
 
 3. Fertig. Der Workflow [`negative-price-alert.yml`](.github/workflows/negative-price-alert.yml)
-   läuft automatisch täglich um 13:00 UTC (nachdem die Day-Ahead-Auktion
-   veröffentlicht ist) und prüft die Preise für den nächsten Tag. Gibt es
-   negative Preisperioden, kommt eine E-Mail wie:
+   läuft automatisch zweimal täglich (13:00 und 19:00 Uhr MESZ, im Winter
+   wegen der fixen UTC-Zeit 12:00 und 18:00 Uhr MEZ) und prüft die Preise für
+   den nächsten Tag. Gibt es negative Preisperioden, kommt eine E-Mail wie:
 
    ```
    Betreff: Negative Strompreise am 2026-06-28
