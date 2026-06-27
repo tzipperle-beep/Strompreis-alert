@@ -11,9 +11,9 @@ import requests
 
 ENERGY_CHARTS_URL = "https://api.energy-charts.info/price"
 
-BIDDING_ZONE = os.environ.get("BIDDING_ZONE", "DE-LU")
-SMTP_HOST = os.environ.get("SMTP_HOST", "smtp.gmail.com")
-SMTP_PORT = int(os.environ.get("SMTP_PORT", "465"))
+BIDDING_ZONE = os.environ.get("BIDDING_ZONE") or "DE-LU"
+SMTP_HOST = os.environ.get("SMTP_HOST") or "smtp.gmail.com"
+SMTP_PORT = int(os.environ.get("SMTP_PORT") or "465")
 SMTP_USER = os.environ.get("SMTP_USER")
 SMTP_PASSWORD = os.environ.get("SMTP_PASSWORD")
 EMAIL_TO = os.environ.get("EMAIL_TO")
