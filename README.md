@@ -40,6 +40,19 @@ Versand erfolgt per SMTP (Standard: Gmail).
    Gibt es keine negativen Preise, wird **keine** Mail geschickt (nur ein
    Log-Eintrag im Workflow-Run).
 
+## Keepalive
+
+GitHub deaktiviert geplante (`cron`) Workflows automatisch, wenn ein Repository
+60 Tage lang keinen neuen Commit erhält ("disabled_inactivity") – der Alert
+würde dann stillschweigend aufhören zu laufen, ohne Fehlermeldung.
+
+Der zusätzliche Workflow [`keepalive.yml`](.github/workflows/keepalive.yml)
+läuft deshalb einmal im Monat und committet einen Zeitstempel in
+`.github/keepalive.txt`. Das hält das Repo "aktiv" und verhindert die
+automatische Deaktivierung. Falls der Haupt-Workflow trotzdem einmal
+deaktiviert wird (z. B. nach sehr langer Pause): Tab "Actions" → Workflow
+auswählen → Button "Enable workflow" klicken.
+
 ## Manuell testen
 
 Workflow manuell über den Tab "Actions" → "Negativer Strompreis E-Mail-Alert" →

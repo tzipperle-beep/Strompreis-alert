@@ -1,0 +1,32 @@
+name: Keepalive
+
+on:
+  schedule:
+    # Einmal im Monat, damit das Repo nie 60 Tage ohne Aktivitaet ist.
+    # GitHub deaktiviert geplante Workflows sonst automatisch
+    # (disabled_inactivity) und der Strompreis-Alert wuerde stillschweigend
+    # aufhoeren zu laufen.
+    - cron: "0 3 1 * *"
+  workflow_dispatch: {}
+
+permissions:
+  contents: write
+
+jobs:
+  touch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Update keepalive timestamp
+        run: |
+          mkdir -p .github
+          date -u +"Zuletzt aktualisiert: %Y-%m-%d %H:%M UTC" > .github/keepalive.txt
+
+      - name: Commit and push if changed
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add .github/keepalive.txt
+          git diff --cached --quiet || git commit -m "Keepalive: repo activity to prevent workflow auto-disable"
+          git push
