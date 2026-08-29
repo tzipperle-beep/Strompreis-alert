@@ -24,7 +24,7 @@ Versand erfolgt per SMTP (Standard: Gmail).
    - Optional Variable `SMTP_HOST` / `SMTP_PORT`, falls kein Gmail genutzt wird
      (Standard: `smtp.gmail.com` / `465`)
 
-3. Fertig. Der Workflow [`negative-price-alert.yml`](.github/workflows/negative-price-alert.yml)
+3. Fertig. Der Workflow [`strompreis-alert.yml`](.github/workflows/strompreis-alert.yml)
    läuft automatisch zweimal täglich (13:00 und 19:00 Uhr MESZ, im Winter
    wegen der fixen UTC-Zeit 12:00 und 18:00 Uhr MEZ) und prüft die Preise für
    den nächsten Tag. Gibt es negative Preisperioden, kommt eine E-Mail wie:
