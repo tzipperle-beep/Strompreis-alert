@@ -28,12 +28,16 @@ except ImportError:  # pragma: no cover
     LOCAL_TZ = timezone.utc
 
 
-def fetch_prices(date_str: str) -> dict:
+def fetch_prices(date_str: str) -> dict | None:
     response = requests.get(
         ENERGY_CHARTS_URL,
         params={"bzn": BIDDING_ZONE, "start": date_str, "end": date_str},
         timeout=30,
     )
+    if response.status_code == 404:
+        # Day-Ahead-Preise fuer diesen Tag sind noch nicht veroeffentlicht
+        # (Boersen-Auktion laeuft erst gegen 12:30-13:00 Uhr).
+        return None
     response.raise_for_status()
     return response.json()
 
@@ -96,6 +100,10 @@ def main() -> int:
     date_str = tomorrow.isoformat()
 
     data = fetch_prices(date_str)
+    if data is None:
+        print(f"Day-Ahead-Preise fuer {date_str} noch nicht veroeffentlicht.")
+        return 0
+
     periods = find_negative_periods(data)
 
     if not periods:
