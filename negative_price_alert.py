@@ -4,6 +4,7 @@
 import os
 import smtplib
 import sys
+import time
 from datetime import datetime, timedelta, timezone
 from email.mime.text import MIMEText
 
@@ -28,18 +29,23 @@ except ImportError:  # pragma: no cover
     LOCAL_TZ = timezone.utc
 
 
-def fetch_prices(date_str: str) -> dict | None:
-    response = requests.get(
-        ENERGY_CHARTS_URL,
-        params={"bzn": BIDDING_ZONE, "start": date_str, "end": date_str},
-        timeout=30,
-    )
-    if response.status_code == 404:
-        # Day-Ahead-Preise fuer diesen Tag sind noch nicht veroeffentlicht
-        # (Boersen-Auktion laeuft erst gegen 12:30-13:00 Uhr).
-        return None
-    response.raise_for_status()
-    return response.json()
+def fetch_prices(date_str: str, retries: int = 3, backoff_seconds: int = 20) -> dict | None:
+    for attempt in range(1, retries + 1):
+        response = requests.get(
+            ENERGY_CHARTS_URL,
+            params={"bzn": BIDDING_ZONE, "start": date_str, "end": date_str},
+            timeout=30,
+        )
+        if response.status_code == 404:
+            # Day-Ahead-Preise fuer diesen Tag sind noch nicht veroeffentlicht
+            # (Boersen-Auktion laeuft erst gegen 12:30-13:00 Uhr).
+            return None
+        if response.status_code >= 500 and attempt < retries:
+            # Vorruebergehender API-Ausfall: kurz warten und erneut versuchen.
+            time.sleep(backoff_seconds)
+            continue
+        response.raise_for_status()
+        return response.json()
 
 
 def find_negative_periods(data: dict) -> list[tuple[datetime, datetime]]:
@@ -90,7 +96,7 @@ def send_email(subject: str, body: str) -> None:
     message["From"] = SMTP_USER
     message["To"] = EMAIL_TO
 
-    with smtplib.SMTP_SSL(SMTP_HOST, SMTP_PORT) as server:
+    with smtplib.SMTP_SSL(SMTP_HOST, SMTP_PORT, timeout=30) as server:
         server.login(SMTP_USER, SMTP_PASSWORD)
         server.sendmail(SMTP_USER, [EMAIL_TO], message.as_string())
 
